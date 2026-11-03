@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Аккорды</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px 20px; background: #f4f2ed; color: #252522; font: 20px/1.45 system-ui, sans-serif; }
+    .song { position: relative; max-width: 760px; margin: 0 auto; padding: 32px 40px 48px; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px #25252212;}
+    .song__lyrics { position: relative; z-index: 1; }
+    .song__chord-layer { position: absolute; z-index: 2; inset: 0; pointer-events: none; overflow: visible; }
+    .song__title { margin: 0 0 24px; font-size: 1.8rem; line-height: 1.3; }
+    .song__line { min-height: 1.45em; line-height: 1.45; white-space: pre-wrap; }
+    .song__line--chord-text { white-space: pre-wrap; }
+    .song__word { display: inline-block; white-space: pre; }
+    .song__word--chorded { padding-top: 22px; }
+    .song__chord-point { display: inline-block; }
+    .song__chord-label { position: absolute; visibility: hidden; white-space: nowrap; color: #a04420; font-size: .82em; font-weight: 700; line-height: 1.2; }
+    .song__chord { color: #a04420; font-size: .82em; font-weight: 700; line-height: 1.2; }
+    .song__chord::after { content: attr(data-chord); }
+    .song__line--chords { padding: .3em 0 .8em; color: #a04420; font-weight: 700; }
+    .song__chorus { margin: .4em 0; padding: .35em .5em; border-radius: 4px; background: #f1efeb; }
+    @media (max-width: 560px) { body { padding: 12px 8px; } .song { padding: 24px 18px; } }
+  </style>
+</head>
+<body>
+  <main id="song" class="song" aria-label="Текст песни с аккордами">
+    <div id="lyrics" class="song__lyrics"></div>
+    <div id="chord-layer" class="song__chord-layer" aria-hidden="true"></div>
+  </main>
+  <script src="script-production.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

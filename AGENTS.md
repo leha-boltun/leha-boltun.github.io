@@ -5,7 +5,6 @@ No Node.js, npm, frameworks or build tools.
 
 - index.html: HTML structure only.
 - script.js: Main application logic and rendering.
-- script-demo.js: Demo data.
 - script-production.js: Production chord data.
 
 ### Rules
@@ -13,8 +12,42 @@ No Node.js, npm, frameworks or build tools.
 - Use BEM naming methodology.
 - Keep all JavaScript outside HTML.
 - Do not duplicate application logic.
-- Keep demo and production data separate.
 - Both modes must use the same rendering logic.
 - Do not put demo data inside script.js.
 - Do not put rendering logic inside demo or production files.
 - Keep the project simple. Do not create additional files without a clear reason.
+
+### Синтаксис файла с аккордами
+
+Общая структура:
+```
+! Название песни
+
+Куплет
+// 
+   Припев 
+//
+
+Куплет 2
+// 
+   Припев 2
+//
+```
+
+Аккорды находятся над буквами
+
+```
+     Am  Dm    E  Am   C G 
+Строка  текста   песни
+```
+
+Am находится над "а", Dm над "е", E над пробелом, С и G просто в конце
+
+Бывают просто аккорды и просто текст
+
+```
+Am | Dm | E
+
+Это просто текст
+
+```
