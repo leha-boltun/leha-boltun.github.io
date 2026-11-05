@@ -18,7 +18,7 @@ function parseChords(source) {
     } else if (content.startsWith("//")) {
       lines.push({ type: "chorus" });
     } else if (isChordsLine(content)) {
-      lines.push({ type: "chords", content: content.split(/\s+/).filter((part) => part !== "|"), raw: rawLine });
+      lines.push({ type: "chords", content: content.split(/\s+/), raw: rawLine });
     } else {
       lines.push({ type: "text", content: rawLine });
     }
