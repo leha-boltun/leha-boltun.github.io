@@ -92,7 +92,17 @@ function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 }
 
-function formatChords(lines, container) {
+function formatToc(lines, toc) {
+  const titles = lines.filter((line) => line.type === "title");
+  const titleIds = new Map(titles.map((line, index) => [line, `song-title-${index + 1}`]));
+  toc.innerHTML = `<h2 class="song__toc-title">Содержание</h2><ol class="song__toc-list">${titles.map((line) => {
+    const id = titleIds.get(line);
+    return `<li class="song__toc-item"><a class="song__toc-link" href="#${id}">${escapeHtml(line.content)}</a></li>`;
+  }).join("")}</ol>`;
+  return titleIds;
+}
+
+function formatChords(lines, container, tocIds) {
   let output = "";
   let inChorus = false;
 
@@ -103,7 +113,7 @@ function formatChords(lines, container) {
       return;
     }
     if (line.type === "title") {
-      output += `<h1 class="song__title">${escapeHtml(line.content)}</h1>`;
+      output += `<h1 id="${tocIds.get(line)}" class="song__title">${escapeHtml(line.content)}</h1>`;
       return;
     }
     if (line.type === "chords") {
@@ -143,13 +153,16 @@ function formatChords(lines, container) {
 function init() {
   const song = document.querySelector("#song");
   const lyrics = document.querySelector("#lyrics");
+  const toc = document.querySelector("#song-toc");
   const layer = document.querySelector("#chord-layer");
   const labels = new Map();
   const gap = 8;
   const verticalGap = 4;
   let frame = 0;
 
-  formatChords(parseChords(source), lyrics);
+  const lines = parseChords(source);
+  const tocIds = formatToc(lines, toc);
+  formatChords(lines, lyrics, tocIds);
 
   function syncLabels(points) {
     const live = new Set(points);

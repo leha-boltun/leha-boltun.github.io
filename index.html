@@ -6,29 +6,45 @@
   <title>Аккорды</title>
   <style>
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
     body { margin: 0; padding: 32px 20px; background: #f4f2ed; color: #252522; font: 20px/1.45 system-ui, sans-serif; }
-    .song { position: relative; max-width: 760px; margin: 0 auto; padding: 32px 40px 48px; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px #25252212;}
+    .song { position: relative; max-width: 760px; margin: 0 auto; padding: 32px 40px 48px; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px #25252212; }
+    .song__toc { margin-bottom: 32px; padding: 18px 20px; border-radius: 8px; background: #f1efeb; }
+    .song__toc-title { margin: 0 0 12px; font-size: 1.25rem; }
+    .song__toc-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 24px; margin: 0; padding-left: 24px; }
+    .song__toc-link { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .song__toc-link:hover { color: #a04420; }
     .song__lyrics { position: relative; z-index: 1; }
-    .song__chord-layer { position: absolute; z-index: 2; inset: 0; pointer-events: none; overflow: visible; }
-    .song__title { margin: 0 0 24px; font-size: 1.8rem; line-height: 1.3; }
+    .song__chord-layer { position: absolute; z-index: 2; inset: 0; overflow: visible; pointer-events: none; }
+    .song__title { margin: 0 0 24px; scroll-margin-top: 20px; font-size: 1.8rem; line-height: 1.3; }
     .song__line { min-height: 1.45em; line-height: 1.45; white-space: pre-wrap; }
     .song__line--chord-text { white-space: pre-wrap; }
     .song__word { display: inline-block; white-space: pre; }
     .song__word--chorded { padding-top: 22px; }
     .song__chord-point { display: inline-block; }
-    .song__chord-label { position: absolute; visibility: hidden; white-space: nowrap; color: #a04420; font-size: .82em; font-weight: 700; line-height: 1.2; }
+    .song__chord-label { position: absolute; visibility: hidden; color: #a04420; font-size: .82em; font-weight: 700; line-height: 1.2; white-space: nowrap; }
     .song__chord { color: #a04420; font-size: .82em; font-weight: 700; line-height: 1.2; }
     .song__chord::after { content: attr(data-chord); }
     .song__line--chords { padding: .3em 0 .8em; color: #a04420; font-weight: 700; }
     .song__chorus { margin: .4em 0; padding: .35em .5em; border-radius: 4px; background: #f1efeb; }
-    @media (max-width: 560px) { body { padding: 12px 8px; } .song { padding: 24px 18px; } }
+    .song__to-top { position: fixed; z-index: 10; right: 24px; bottom: 24px; display: grid; width: 48px; height: 48px; place-items: center; border: 0; border-radius: 50%; background: #a04420; color: #fff; font-size: 28px; line-height: 1; text-decoration: none; box-shadow: 0 4px 14px #25252233; }
+    .song__to-top:hover { background: #813618; }
+    .song__to-top:focus-visible, .song__toc-link:focus-visible { outline: 3px solid #252522; outline-offset: 3px; }
+    @media (max-width: 560px) {
+      body { padding: 12px 8px; }
+      .song { padding: 24px 18px; }
+      .song__toc-list { grid-template-columns: 1fr; }
+      .song__to-top { right: 16px; bottom: 16px; }
+    }
   </style>
 </head>
 <body>
   <main id="song" class="song" aria-label="Текст песни с аккордами">
+    <nav id="song-toc" class="song__toc" aria-label="Содержание"></nav>
     <div id="lyrics" class="song__lyrics"></div>
     <div id="chord-layer" class="song__chord-layer" aria-hidden="true"></div>
   </main>
+  <a class="song__to-top" href="#song-toc" aria-label="К содержанию" title="К содержанию">↑</a>
   <script src="script-production.js"></script>
   <script src="script.js"></script>
 </body>
