@@ -113,7 +113,8 @@ function formatSong(song, index) {
   let output = "";
   let inChorus = false;
 
-  output += `<section class="song__section"><h1 id="song-title-${index + 1}" class="song__title">${escapeHtml(song.title)}</h1>`;
+  const hidden = index === 0 ? "" : " hidden";
+  output += `<section class="song__section" data-song-index="${index}"${hidden}><h1 id="song-title-${index + 1}" class="song__title">${escapeHtml(song.title)}</h1>`;
 
   song.content.forEach((line) => {
     if (line.type === "chorus") {
@@ -159,7 +160,7 @@ function formatSong(song, index) {
 
 function formatSongs(songs, toc, container) {
   toc.innerHTML = `<h2 class="song__toc-title">Содержание</h2><ol class="song__toc-list">${songs.map((song, index) =>
-    `<li class="song__toc-item"><a class="song__toc-link" href="#song-title-${index + 1}">${escapeHtml(song.title)}</a></li>`
+    `<li class="song__toc-item"><a class="song__toc-link" href="#song-title-${index + 1}" data-song-index="${index}"${index === 0 ? ' aria-current="location"' : ""}>${escapeHtml(song.title)}</a></li>`
   ).join("")}</ol>`;
 
   let output = "";
@@ -255,6 +256,21 @@ function init() {
     if (frame) return;
     frame = requestAnimationFrame(layout);
   }
+
+  toc.addEventListener("click", (event) => {
+    const link = event.target.closest(".song__toc-link[data-song-index]");
+    if (!link) return;
+
+    const selectedIndex = Number(link.dataset.songIndex);
+    lyrics.querySelectorAll(".song__section").forEach((section, index) => {
+      section.hidden = index !== selectedIndex;
+    });
+    toc.querySelectorAll(".song__toc-link").forEach((item) => {
+      if (item === link) item.setAttribute("aria-current", "location");
+      else item.removeAttribute("aria-current");
+    });
+    scheduleLayout();
+  });
 
   const resizeObserver = new ResizeObserver(scheduleLayout);
   resizeObserver.observe(song);

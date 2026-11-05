@@ -60,6 +60,10 @@ body {
   z-index: 1;
 }
 
+.song__section[hidden] {
+  display: none;
+}
+
 .song__chord-layer {
   position: absolute;
   z-index: 2;
