@@ -43,7 +43,7 @@ function parseChords(source) {
 }
 
 function attachChords(chordLine, textLine) {
-  const text = textLine.content;
+  let text = textLine.content;
   const chordPositions = [];
   const matcher = new RegExp(CHORD_TOKEN_PATTERN.source, CHORD_TOKEN_PATTERN.flags);
   let match;
@@ -51,8 +51,13 @@ function attachChords(chordLine, textLine) {
     if (match[0] === "|") continue;
     chordPositions.push({ position: match.index, chord: match[0] });
   }
+  const lastChordPosition = Math.max(-1, ...chordPositions.map(({ position }) => position));
+  if (lastChordPosition >= text.length) {
+    text += " ".repeat(lastChordPosition - text.length + 1);
+  }
+
   const lyricWords = [];
-  const wordMatcher = /\S+|\s+/g;
+  const wordMatcher = /\S+|\s/g;
   while ((match = wordMatcher.exec(text))) {
     lyricWords.push({
       start: match.index,
@@ -65,7 +70,6 @@ function attachChords(chordLine, textLine) {
   chordPositions.forEach(({ position, chord }) => {
     let word = lyricWords.find((item) => position >= item.start && position < item.end);
     if (!word) word = lyricWords.find((item) => item.start >= position);
-    if (!word && lyricWords.length) word = lyricWords[lyricWords.length - 1];
     if (word) {
       const targetOffset = Math.max(0, Math.min(position - word.start, word.word.length - 1));
       word.chords.push({
@@ -77,15 +81,11 @@ function attachChords(chordLine, textLine) {
     }
   });
 
-  return lyricWords
-    .filter((item, index) => item.chords.length || !/^\s+$/.test(item.word)
-      || (index > 0 && index < lyricWords.length - 1))
-    .map((item) => {
-      const normalizedWord = /^\s+$/.test(item.word) ? " " : item.word;
-      const wordParts = [{ type: "word", word: normalizedWord }];
-      wordParts.push(...item.chords);
-      return wordParts;
-    });
+  return lyricWords.map((item) => {
+    const wordParts = [{ type: "word", word: item.word }];
+    wordParts.push(...item.chords);
+    return wordParts;
+  });
 }
 
 function escapeHtml(value) {
@@ -136,12 +136,14 @@ function formatChords(lines, container, tocIds) {
 
       const word = Array.from(wordPart.word).map((character, charIndex) => {
         const chords = chordsByOffset.get(charIndex);
+        const renderedCharacter = character === " " ? "&nbsp;" : escapeHtml(character);
         return chords
-          ? `<span class="song__chord-point" data-chord="${escapeHtml(chords.join(" "))}">${escapeHtml(character)}</span>`
-          : escapeHtml(character);
+          ? `<span class="song__chord-point" data-chord="${escapeHtml(chords.join(" "))}">${renderedCharacter}</span>`
+          : renderedCharacter;
       }).join("");
       const wordClass = chordParts.length ? "song__word song__word--chorded" : "song__word";
-      return `<span class="${wordClass}">${word}</span>`;
+      const spaceClass = /^\s$/.test(wordPart.word) ? " song__word--space" : "";
+      return `<span class="${wordClass}${spaceClass}">${word}</span>`;
     }).join("");
     output += `<div class="song__line song__line--chord-text">${content}</div>`;
   });
