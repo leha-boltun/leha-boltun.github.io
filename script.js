@@ -6,7 +6,7 @@ function isChordsLine(value) {
   return Boolean(trimmed) && trimmed.split(/\s+/).every((part) => part === "|" || CHORD_PATTERN.test(part));
 }
 
-function parseChords(source) {
+function parseLines(source) {
   const lines = [];
 
   source.split(/\r?\n/).forEach((rawLine) => {
@@ -40,6 +40,23 @@ function parseChords(source) {
     }
   }
   return merged;
+}
+
+function parseSongs(lines) {
+  const songs = [];
+  let currentSong = null;
+
+  lines.forEach((line) => {
+    if (line.type === "title") {
+      currentSong = { title: line.content, content: [] };
+      songs.push(currentSong);
+      return;
+    }
+
+    currentSong.content.push(line);
+  });
+
+  return songs;
 }
 
 function attachChords(chordLine, textLine) {
@@ -92,28 +109,16 @@ function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 }
 
-function formatToc(lines, toc) {
-  const titles = lines.filter((line) => line.type === "title");
-  const titleIds = new Map(titles.map((line, index) => [line, `song-title-${index + 1}`]));
-  toc.innerHTML = `<h2 class="song__toc-title">Содержание</h2><ol class="song__toc-list">${titles.map((line) => {
-    const id = titleIds.get(line);
-    return `<li class="song__toc-item"><a class="song__toc-link" href="#${id}">${escapeHtml(line.content)}</a></li>`;
-  }).join("")}</ol>`;
-  return titleIds;
-}
-
-function formatChords(lines, container, tocIds) {
+function formatSong(song, index) {
   let output = "";
   let inChorus = false;
 
-  lines.forEach((line) => {
+  output += `<section class="song__section"><h1 id="song-title-${index + 1}" class="song__title">${escapeHtml(song.title)}</h1>`;
+
+  song.content.forEach((line) => {
     if (line.type === "chorus") {
       output += inChorus ? "</div>" : '<div class="song__chorus" aria-label="Припев">';
       inChorus = !inChorus;
-      return;
-    }
-    if (line.type === "title") {
-      output += `<h1 id="${tocIds.get(line)}" class="song__title">${escapeHtml(line.content)}</h1>`;
       return;
     }
     if (line.type === "chords") {
@@ -149,6 +154,18 @@ function formatChords(lines, container, tocIds) {
   });
 
   if (inChorus) output += "</div>";
+  return `${output}</section>`;
+}
+
+function formatSongs(songs, toc, container) {
+  toc.innerHTML = `<h2 class="song__toc-title">Содержание</h2><ol class="song__toc-list">${songs.map((song, index) =>
+    `<li class="song__toc-item"><a class="song__toc-link" href="#song-title-${index + 1}">${escapeHtml(song.title)}</a></li>`
+  ).join("")}</ol>`;
+
+  let output = "";
+  songs.forEach((song, index) => {
+    output += formatSong(song, index);
+  });
   container.innerHTML = output;
 }
 
@@ -162,9 +179,9 @@ function init() {
   const verticalGap = 4;
   let frame = 0;
 
-  const lines = parseChords(source);
-  const tocIds = formatToc(lines, toc);
-  formatChords(lines, lyrics, tocIds);
+  const lines = parseLines(source);
+  const songs = parseSongs(lines);
+  formatSongs(songs, toc, lyrics);
 
   function syncLabels(points) {
     const live = new Set(points);
