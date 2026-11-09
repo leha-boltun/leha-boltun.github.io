@@ -19,6 +19,14 @@ function parseLines(source) {
       lines.push({ type: "chorus" });
     } else if (content.startsWith("//")) {
       lines.push({ type: "comment", content: content.slice(2).trim() });
+    } else if (content.includes("//")) {
+      const [chords, ...commentParts] = content.split("//");
+      const comment = commentParts.join("//").trim();
+      if (comment && isChordsLine(chords)) {
+        lines.push({ type: "chords-comment", chords: chords.trim().split(/\s+/), comment });
+      } else {
+        lines.push({ type: "text", content: rawLine });
+      }
     } else if (isChordsLine(content)) {
       lines.push({ type: "chords", content: content.split(/\s+/), raw: rawLine });
     } else {
@@ -126,6 +134,11 @@ function formatSong(song, index) {
     }
     if (line.type === "chords") {
       output += `<div class="song__line song__line--chords">${line.content.map((chord) => `<span class="song__chord" data-chord="${escapeHtml(chord)}"></span>`).join(" ")}</div>`;
+      return;
+    }
+    if (line.type === "chords-comment") {
+      const chords = line.chords.map((chord) => `<span class="song__chord" data-chord="${escapeHtml(chord)}"></span>`).join(" ");
+      output += `<div class="song__line song__line--chords">${chords}<span class="song__comment song__comment--inline">${escapeHtml(line.comment)}</span></div>`;
       return;
     }
     if (line.type === "text") {

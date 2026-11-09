@@ -146,6 +146,12 @@ body {
   font-weight: bold;
 }
 
+.song__comment--inline {
+  margin-left: .8em;
+  font-size: .78em;
+  font-weight: bold;
+}
+
 .song__to-top {
   position: fixed;
   z-index: 10;
