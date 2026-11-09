@@ -116,7 +116,7 @@ function attachChords(chordLine, textLine) {
 }
 
 function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 }
 
 function formatSong(song, index) {
@@ -177,22 +177,117 @@ function formatSong(song, index) {
   return `${output}</section>`;
 }
 
-function formatSongs(songs, toc, container) {
-  toc.innerHTML = `<h2 class="song__toc-title">Содержание</h2><ol class="song__toc-list">${songs.map((song, index) =>
-    `<li class="song__toc-item"><a class="song__toc-link" href="#song-title-${index + 1}" data-song-index="${index}"${index === 0 ? ' aria-current="location"' : ""}>${escapeHtml(song.title)}</a></li>`
-  ).join("")}</ol>`;
+function normalizeTitle(value) {
+  return String(value ?? "").toLocaleLowerCase("ru").trim();
+}
+
+function getTocSections(sourceToc) {
+  const sections = [];
+  let currentSection = null;
+
+  sourceToc.split(/\r?\n/).forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) return;
+
+    const songEntry = line.match(/^\d+[.)]\s*(.+)$/);
+    if (!songEntry) {
+      currentSection = { section: line.replace(/[.:]+$/, ""), entries: [] };
+      sections.push(currentSection);
+      return;
+    }
+    if (!currentSection) {
+      currentSection = { section: "", entries: [] };
+      sections.push(currentSection);
+    }
+    currentSection.entries.push(songEntry[1].trim());
+  });
+
+  return sections;
+}
+
+function matchTocSongs(songs, sourceToc) {
+  const orderedSongs = songs.map((song) => ({ origTitle: song.title, title: normalizeTitle(song.title), matched: false }))
+    .sort((a, b) => b.title.length - a.title.length);
+  const sections = getTocSections(sourceToc);
+  const pendingEntries = sections.flatMap((section, sectionIndex) => section.entries.map((entry) => ({
+    sectionIndex,
+    title: normalizeTitle(entry),
+  })));
+
+  function assign(entry, candidate) {
+    entry.match = candidate;
+    candidate.matched = true;
+  }
+
+  pendingEntries.forEach((entry) => {
+    const parts = entry.title.split("-");
+    if (parts.length !== 2) return;
+    const candidate = orderedSongs
+        .filter((item) => !item.matched)
+        .find((item) => item.title === parts[1]);
+    if (candidate) assign(entry, candidate);
+  });
+
+  pendingEntries.filter((entry) => !entry.match).forEach((entry) => {
+    const candidate = orderedSongs
+        .filter((item) => !item.matched)
+        .find((item) => entry.title.endsWith(item.title));
+    if (candidate) assign(entry, candidate);
+  });
+
+  pendingEntries.filter((entry) => !entry.match).forEach((entry) => {
+    const referenceWords = entry.title.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    let bestCandidate = null;
+    let bestCount = 0;
+    orderedSongs.filter((item) => !item.matched).forEach((candidate) => {
+      const count = candidate.title.split(/[^\p{L}\p{N}]+/u).filter(Boolean)
+        .filter((word) => referenceWords.includes(word)).length;
+      if (count > bestCount) {
+        bestCandidate = candidate;
+        bestCount = count;
+      }
+    });
+    if (bestCandidate) assign(entry, bestCandidate);
+  });
+
+  const output = sections.map(({ section }) => ({ section, songs: [] }));
+  pendingEntries.forEach(({ sectionIndex, match }) => {
+    if (match) output[sectionIndex].songs.push(match.origTitle);
+  });
+  const unmatchedSongs = orderedSongs.filter((song) => !song.matched).map((song) => song.origTitle);
+  if (unmatchedSongs.length) output.push({ section: "Другое", songs: unmatchedSongs });
+  return output;
+}
+
+function formatSongs(songs, tocElement, lyricsElement, tocSections) {
+  let tocMarkup = "";
+  let firstLink = true;
+  tocSections.forEach((section) => {
+    if (!section.songs.length) return;
+    tocMarkup += `<h3 class="song__toc-section-title">${escapeHtml(section.section)}</h3>`;
+    if (section.songs.length) {
+      tocMarkup += `<ol class="song__toc-list">${section.songs.map((title) => {
+        const index = songs.findIndex((song) => song.title === title);
+        if (index < 0) return "";
+        const current = firstLink ? ' aria-current="location"' : "";
+        firstLink = false;
+        return `<li class="song__toc-item"><a class="song__toc-link" href="#song-title-${index + 1}" data-song-index="${index}"${current}>${escapeHtml(title)}</a></li>`;
+      }).join("")}</ol>`;
+    }
+  });
+  tocElement.innerHTML = tocMarkup;
 
   let output = "";
   songs.forEach((song, index) => {
     output += formatSong(song, index);
   });
-  container.innerHTML = output;
+  lyricsElement.innerHTML = output;
 }
 
 function init() {
   const song = document.querySelector("#song");
   const lyrics = document.querySelector("#lyrics");
-  const toc = document.querySelector("#song-toc");
+  const tocElement = document.querySelector("#song-toc");
   const layer = document.querySelector("#chord-layer");
   const labels = new Map();
   const gap = 8;
@@ -201,7 +296,8 @@ function init() {
 
   const lines = parseLines(source);
   const songs = parseSongs(lines);
-  formatSongs(songs, toc, lyrics);
+  const tocSections = matchTocSongs(songs, toc);
+  formatSongs(songs, tocElement, lyrics, tocSections);
 
   function syncLabels(points) {
     const live = new Set(points);
@@ -276,7 +372,7 @@ function init() {
     frame = requestAnimationFrame(layout);
   }
 
-  toc.addEventListener("click", (event) => {
+  tocElement.addEventListener("click", (event) => {
     const link = event.target.closest(".song__toc-link[data-song-index]");
     if (!link) return;
 
@@ -284,7 +380,7 @@ function init() {
     lyrics.querySelectorAll(".song__section").forEach((section, index) => {
       section.hidden = index !== selectedIndex;
     });
-    toc.querySelectorAll(".song__toc-link").forEach((item) => {
+    tocElement.querySelectorAll(".song__toc-link").forEach((item) => {
       if (item === link) item.setAttribute("aria-current", "location");
       else item.removeAttribute("aria-current");
     });
