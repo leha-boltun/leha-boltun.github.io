@@ -324,7 +324,7 @@ Am F G Em // 2 раза
 Для тебя   всё это мило
       Am F    G    Em
 На тебя   глазеют люди
-     Am F    G      Em
+      Am F   G     Em
 На тебя   летят витрины
 >>
  Am            G     Dm          G
@@ -342,7 +342,7 @@ Am F G Em // 2 раза
 Для тебя   всё это мило
       Am F    G    Em
 На тебя   глазеют люди
-     Am F    G      Em
+      Am F   G     Em
 На тебя   летят витрины
 
 Am F G Em // 2 раза
@@ -364,7 +364,7 @@ Am F G Em // 2 раза
 Для тебя   всё это мило
       Am F    G    Em
 На тебя   глазеют люди
-     Am F    G      Em
+      Am F   G      Em
 На тебя   летят витрины
 >>
 // припев 2 раза
@@ -562,8 +562,7 @@ Am
 
 #Осколок льда
 
-Amsus2 | Dm6/F F | Dm9 | Amsus2
-// 2 раза
+Amsus2 | Dm6/F F | Dm9 | Amsus2 // 2 раза
 
  Amsus2              C
 Ночь унесла тяжёлые тучи,
@@ -603,8 +602,8 @@ F        G6          Csus2 C/B   Am7
               F         G6           D      Dm7
   И не знает боли в груди осколок льда...
 >>
-Am | Em7 | F G7 | Amsus2  
-// 2 раза
+Am | Em7 | F G7 | Amsus2  // 2 раза
+
 Fmaj G6 | Amsus2 G6 | Fmaj G6 | Amsus2
 Fmaj G6 | Amsus2 G6 | F G6 | D | Dm7 Dm6
 
@@ -1796,8 +1795,9 @@ F     Dm     E     Am
 F     Dm     E     Am
 Я ухожу, ухожу красиво.
 >>
-
-Am Dm E Am F Dm E Am // 2 раза
+// 2 раза
+Am Dm E Am 
+F Dm E Am 
 
  Am           Dm        E             Am
 Вот и всё никто не ждёт и никто не в дураках,
