@@ -13,9 +13,9 @@ function parseLines(source) {
     if (!rawLine.trim()) return;
     const content = rawLine.trim();
 
-    if (content.startsWith("!")) {
+    if (content.startsWith("#")) {
       lines.push({ type: "title", content: content.slice(1).trim() });
-    } else if (content.startsWith("//")) {
+    } else if (content === ">>") {
       lines.push({ type: "chorus" });
     } else if (isChordsLine(content)) {
       lines.push({ type: "chords", content: content.split(/\s+/), raw: rawLine });
