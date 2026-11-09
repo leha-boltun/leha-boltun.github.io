@@ -17,6 +17,8 @@ function parseLines(source) {
       lines.push({ type: "title", content: content.slice(1).trim() });
     } else if (content === ">>") {
       lines.push({ type: "chorus" });
+    } else if (content.startsWith("//")) {
+      lines.push({ type: "comment", content: content.slice(2).trim() });
     } else if (isChordsLine(content)) {
       lines.push({ type: "chords", content: content.split(/\s+/), raw: rawLine });
     } else {
@@ -128,6 +130,10 @@ function formatSong(song, index) {
     }
     if (line.type === "text") {
       output += `<div class="song__line">${escapeHtml(line.content)}</div>`;
+      return;
+    }
+    if (line.type === "comment") {
+      output += `<aside class="song__comment">${escapeHtml(line.content)}</aside>`;
       return;
     }
 

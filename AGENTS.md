@@ -32,6 +32,8 @@ No Node.js, npm, frameworks or build tools.
 >> 
    Припев 2
 >>
+
+// припев 2 раза
 ```
 
 Аккорды находятся над буквами
