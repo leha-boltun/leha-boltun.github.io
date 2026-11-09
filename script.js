@@ -322,7 +322,8 @@ function init() {
 
   function layout() {
     frame = 0;
-    const points = [...lyrics.querySelectorAll(".song__chord-point[data-chord]")];
+    const points = [...lyrics.querySelectorAll(".song__chord-point[data-chord]")]
+      .filter((point) => point.getClientRects().length > 0);
     syncLabels(points);
 
     // Read all geometry before writing label positions.
