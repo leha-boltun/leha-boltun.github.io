@@ -195,7 +195,10 @@ body {
   }
 
   .song__to-top {
-    right: 16px;
-    bottom: 16px;
+    right: 12px;
+    bottom: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
   }
 }
